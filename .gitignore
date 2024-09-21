@@ -45,7 +45,6 @@ _deps
 
 # other
 build/
-*.jpg
 *.pdb
 .exe.config
 TestOperationTimes
