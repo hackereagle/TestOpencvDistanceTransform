@@ -5,6 +5,7 @@
 
 #define DISPLAY_IMAGE 1
 // switch of different distance transform
+#define CALCULATION_WITH_TWO_LINES 1
 
 void DisplayImage(const cv::Mat& image, const std::string& title)
 {
@@ -64,6 +65,7 @@ void DrawAllLabels(cv::Mat labels, cv::Mat& labelsResultImage)
 int main(int argc, const char** argv)
 {
 	cv::Mat image = cv::imread("NoDefect.bmp", cv::IMREAD_GRAYSCALE);
+	// cv::Mat image = cv::imread("14878460214049233.jpg", cv::IMREAD_GRAYSCALE);
 	DisplayImage(image, "Source Image");
 
 	cv::Mat edgeImg;
@@ -73,6 +75,20 @@ int main(int argc, const char** argv)
 	cv::threshold(edgeImg, edgeBinaryImage, 100, 255, cv::THRESH_BINARY);
 	// DisplayImage(edgeBinaryImage, "Edge Binary Image");
 
+#ifdef CALCULATION_WITH_TWO_LINES
+	cv::Mat masknot;
+    cv::bitwise_not(edgeBinaryImage, masknot);
+    DisplayImage(masknot, "masknot");
+    cv::Mat dist, distLabels;
+    cv::distanceTransform(masknot, dist, distLabels, cv::DIST_L2, 5);
+    DisplayImage(dist / 255, "Distance Transform(distance float)");
+    cv::Mat distLabelsResultImage;
+    DrawAllLabels(distLabels, distLabelsResultImage);
+    DisplayImage(distLabelsResultImage, "Distance Labels");
+
+	cv::Mat result(image.size(), CV_32FC1, cv::Scalar::all(0));
+    dist.copyTo(result, edgeBinaryImage);
+#else
 	cv::Mat labels;
 	int num = cv::connectedComponents(edgeBinaryImage, labels);
     std::cout << "labels image type = " << cv::typeToString(labels.type()) << ", label number = " << num << std::endl;
@@ -117,6 +133,8 @@ int main(int argc, const char** argv)
     }
 
 	// std::cout << "\n\nlig: \n" << lig << std::endl;
+#endif // CALCULATION_WITH_TWO_LINES
+
 
 	return EXIT_SUCCESS;
 }
